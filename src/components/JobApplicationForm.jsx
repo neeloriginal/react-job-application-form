@@ -1,6 +1,8 @@
 import React, { useState } from "react";
 import '../assets/css/jobApplicationForm.css';
 import HeaderLogo from '../assets/images/header-logo.jpg';
+import DatePicker from "react-datepicker";
+import "react-datepicker/dist/react-datepicker.css";
 
 export const JobApplicationForm = () => {
 
@@ -17,7 +19,7 @@ export const JobApplicationForm = () => {
         modeOfTransport: '',
         officeDistance: '',
         releaseLetter: '',
-        releaseLetterFile:'',
+        releaseLetterFile: null,
         firstName: '',
         lastName: '',
         phone: '',
@@ -41,19 +43,52 @@ export const JobApplicationForm = () => {
         eirjp: '',
         experience: '',
         akorwitc: '',
+        salarySlip: '', // newly added
         lastMonthSalarySlip: null,
         resume: null
     });
 
     const handleChange = (e) => {
         const { name, value, type, files } = e.target;
+
+        // Handle file input normally
+        if (type === "file") {
+            setFormData(prev => ({
+                ...prev,
+                [name]: files[0]
+            }));
+            return;
+        }
+
+        // 🔥 If Expected CTC changes → Auto Calculate
+        if (name === "expectedSalaryCtc") {
+            const ctc = parseFloat(value) || 0;
+
+            const basic = ctc * 0.50;
+            const esi = ctc * 0.0325;
+            const pf = ctc * 0.12;
+            const inhand = ctc - esi - pf;
+
+            setFormData(prev => ({
+                ...prev,
+                expectedSalaryCtc: value,
+                expectedSalaryBasic: basic.toFixed(2),
+                expectedSalaryEsi: esi.toFixed(2),
+                expectedSalaryPf: pf.toFixed(2),
+                expectedSalaryInhand: inhand.toFixed(2)
+            }));
+
+            return;
+        }
+
+        // Default behavior
         setFormData(prev => ({
             ...prev,
-            [name]: type === 'file' ? files[0] : value
+            [name]: value
         }));
     };
 
-    
+
     const handleClear = () => {
         setFormData({
             groupOfCompany: '',
@@ -68,7 +103,7 @@ export const JobApplicationForm = () => {
             modeOfTransport: '',
             officeDistance: '',
             releaseLetter: '',
-            releaseLetterFile:'',
+            releaseLetterFile: null,
             firstName: '',
             lastName: '',
             phone: '',
@@ -92,18 +127,19 @@ export const JobApplicationForm = () => {
             eirjp: '',
             experience: '',
             akorwitc: '',
+            salarySlip: '', // newly added
             lastMonthSalarySlip: null,
             resume: null
         });
     };
-
+    console.log(formData);
     const handleSubmit = (e) => {
         e.preventDefault();
         console.log('Form submitted:', formData);
         // Add your form submission logic here
     };
 
-    
+
 
     return (
         <>
@@ -402,22 +438,24 @@ export const JobApplicationForm = () => {
                                             </div>
 
                                             <div className="col-lg-4 col-md-6">
-                                                <div className="field-container">
-                                                    <label className="form-label-custom">
-                                                        Release Letter
-                                                    </label>
-                                                    <input
-                                                        type="file"
-                                                        className="file-input-custom"
-                                                        name="releaseLetterFile"
-                                                        onChange={handleChange}
-                                                        accept=".pdf,.jpg,.jpeg,.png"
-                                                    />
-                                                    <div className="helper-text">
-                                                        <i className="bi bi-info-circle"></i>
-                                                        PDF, JPG, PNG (Max 5MB)
+                                                {formData.releaseLetter === "1" && (
+                                                    <div className="field-container">
+                                                        <label className="form-label-custom">
+                                                            Release Letter
+                                                        </label>
+                                                        <input
+                                                            type="file"
+                                                            className="file-input-custom"
+                                                            name="releaseLetterFile"
+                                                            onChange={handleChange}
+                                                            accept=".pdf,.jpg,.jpeg,.png"
+                                                        />
+                                                        <div className="helper-text">
+                                                            <i className="bi bi-info-circle"></i>
+                                                            PDF, JPG, PNG (Max 5MB)
+                                                        </div>
                                                     </div>
-                                                </div>
+                                                )}
                                             </div>
                                         </div>
 
@@ -506,12 +544,22 @@ export const JobApplicationForm = () => {
 
                                                         Date Of Birth
                                                     </label>
-                                                    <input
-                                                        type="date"
+                                                  
+                                                    <DatePicker
+                                                        selected={formData.dob ? new Date(formData.dob) : null}
+                                                        onChange={(date) =>
+                                                            setFormData(prev => ({
+                                                                ...prev,
+                                                                dob: date
+                                                            }))
+                                                        }
+                                                        dateFormat="dd/MM/yyyy"
+                                                        maxDate={new Date()}   // Prevent future date
+                                                        showYearDropdown
+                                                        scrollableYearDropdown
+                                                        yearDropdownItemNumber={100}
+                                                        placeholderText="Select Date of Birth"
                                                         className="form-control form-control-custom"
-                                                        name="dob"
-                                                        value={formData.dob}
-                                                        onChange={handleChange}
                                                     />
                                                 </div>
                                             </div>
@@ -825,19 +873,27 @@ export const JobApplicationForm = () => {
                                                     <label className="form-label-custom">
                                                         Expected date of Joining
                                                     </label>
-                                                    <input
-                                                        type="date"
+                                                   
+
+                                                    <DatePicker
+                                                        selected={formData.expectedJoiningDate ? new Date(formData.expectedJoiningDate) : null}
+                                                        onChange={(eDate) =>
+                                                            setFormData(prev => ({
+                                                                ...prev,
+                                                                expectedJoiningDate: eDate
+                                                            }))
+                                                        }
+                                                        dateFormat="dd/MM/yyyy"
+                                                        minDate={new Date()}   // 🚀 No past dates allowed
+                                                        placeholderText="Select Joining Date"
                                                         className="form-control form-control-custom"
-                                                        name="expectedJoiningDate"
-                                                        value={formData.expectedJoiningDate}
-                                                        onChange={handleChange}
                                                     />
                                                 </div>
                                             </div>
 
                                         </div>
 
-                                        {/* Experience in applied job profile, Total Experience, Expected date of Joining */}
+                                        {/* Experience in applied job profile, Total Experience, If any known / relative working here */}
                                         <div className="row row-four-columns row-spacing">
 
                                             <div className="col-lg-4 col-md-6">
@@ -903,23 +959,18 @@ export const JobApplicationForm = () => {
                                             </div>
                                         </div>
 
-
-
-
-
-
-                                        {/* Release Letter previous employment, Last Month Salary Slip(File),  */}
+                                        {/* previous employment Salary Slip, Last Month Salary Slip(File),  */}
                                         <div className="row row-four-columns row-spacing">
                                             <div className="col-lg-4 col-md-6">
                                                 <div className="field-container">
                                                     <label className="form-label-custom">
 
-                                                        previous employment Release Letter <span className="required-star">*</span>
+                                                        previous employment Salary Slip <span className="required-star">*</span>
                                                     </label>
                                                     <select
                                                         className="form-select select-custom"
-                                                        name="releaseLetter"
-                                                        value={formData.releaseLetter}
+                                                        name="salarySlip"
+                                                        value={formData.salarySlip}
                                                         onChange={handleChange}
                                                         required
                                                     >
@@ -934,24 +985,27 @@ export const JobApplicationForm = () => {
 
 
                                             <div className="col-lg-4 col-md-6">
-                                                <div className="field-container">
-                                                    <label className="form-label-custom">
+                                                {formData.salarySlip === "1" && (
+                                                    <div className="field-container">
+                                                        <label className="form-label-custom">
 
-                                                        Last Month Salary Slip(File)
-                                                    </label>
-                                                    <input
-                                                        type="file"
-                                                        className="file-input-custom"
-                                                        name="lastMonthSalarySlip"
-                                                        onChange={handleChange}
-                                                        accept=".pdf,.jpg,.jpeg,.png"
-                                                    />
-                                                    <div className="helper-text">
-                                                        <i className="bi bi-info-circle"></i>
-                                                        PDF, JPG, PNG (Max 5MB)
+                                                            Last Month Salary Slip(File)
+                                                        </label>
+                                                        <input
+                                                            type="file"
+                                                            className="file-input-custom"
+                                                            name="lastMonthSalarySlip"
+                                                            onChange={handleChange}
+                                                            accept=".pdf,.jpg,.jpeg,.png"
+                                                        />
+                                                        <div className="helper-text">
+                                                            <i className="bi bi-info-circle"></i>
+                                                            PDF, JPG, PNG (Max 5MB)
+                                                        </div>
                                                     </div>
-                                                </div>
+                                                )}
                                             </div>
+
 
                                             <div className="col-lg-4 col-md-6">
                                                 <div className="field-container">
@@ -973,6 +1027,7 @@ export const JobApplicationForm = () => {
                                                 </div>
                                             </div>
                                         </div>
+
 
                                         {/* Buttons */}
                                         <div className="button-group">
