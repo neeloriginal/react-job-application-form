@@ -383,8 +383,7 @@ export const JobApplicationForm = () => {
                                             <div className="col-lg-4 col-md-6">
                                                 <div className="field-container">
                                                     <label className="form-label-custom">
-
-                                                        Release Letter previous employment<span className="required-star">*</span>
+                                                        Previous employment release Letter <span className="required-star">*</span>
                                                     </label>
                                                     <select
                                                         className="form-select select-custom"
@@ -915,7 +914,7 @@ export const JobApplicationForm = () => {
                                                 <div className="field-container">
                                                     <label className="form-label-custom">
 
-                                                        Release Letter previous employment<span className="required-star">*</span>
+                                                        previous employment Release Letter <span className="required-star">*</span>
                                                     </label>
                                                     <select
                                                         className="form-select select-custom"
